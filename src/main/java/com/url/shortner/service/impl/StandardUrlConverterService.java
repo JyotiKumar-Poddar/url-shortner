@@ -35,7 +35,11 @@ public class StandardUrlConverterService implements UrlConverterService {
     public String getShortUrl(final String url) {
         final StringBuilder shortURL = new StringBuilder(hostUrl);
         final Long sequenceId = redisRepository.save(url);
-        shortURL.append(base62EncoderDecoder.baseToBase62(sequenceId));
+        if (sequenceId > 0) {
+            shortURL.append(base62EncoderDecoder.baseToBase62(sequenceId));
+        } else {
+            shortURL.append("Internal server error");
+        }
         log.info("Long url:{} Short url:{}", url, shortURL);
         return shortURL.toString();
     }

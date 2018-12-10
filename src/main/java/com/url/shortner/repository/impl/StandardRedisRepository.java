@@ -21,13 +21,13 @@ public class StandardRedisRepository implements RedisRepository {
     private final ValueOperations<String, String> valueOperations;
     private final HashOperations<String, Long, String> hashOperations;
 
-    public StandardRedisRepository(final RedisTemplate redisTemplate) {
+    public StandardRedisRepository(RedisTemplate redisTemplate) {
         this.valueOperations = redisTemplate.opsForValue();
         this.hashOperations = redisTemplate.opsForHash();
     }
 
     @Override
-    public Long save(final String url) {
+    public Long save(String url) {
         Long sequenceId = 0L;
         boolean isUrlNotSaved = true;
         try {
@@ -35,18 +35,20 @@ public class StandardRedisRepository implements RedisRepository {
             hashOperations.put(KEY_URL, sequenceId, url);
             isUrlNotSaved = false;
             log.info("The url: {} saved with key: {}", url, sequenceId);
-        } catch (final Exception e) {
+        } catch (Exception e) {
             log.error("Error due to " + e);
         } finally {
-            if (isUrlNotSaved)
+            if (isUrlNotSaved) {
                 valueOperations.decrement(KEY_ID);
+                sequenceId = 0L;
+            }
         }
         return sequenceId;
     }
 
     @Override
-    public String fetch(final Long keyId) {
-        final String longUrl = hashOperations.get(KEY_URL, keyId);
+    public String fetch(Long keyId) {
+        String longUrl = hashOperations.get(KEY_URL, keyId);
         if (longUrl != null) {
             log.info("Url fetched: {} with key: {}", longUrl, keyId);
         } else {
